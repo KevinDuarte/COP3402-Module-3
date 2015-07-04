@@ -2,6 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_SYMBOL_TABLE_SIZE 100
+
+typedef struct symbol {
+int kind; // const = 1, var = 2, proc = 3
+char name[12]; // name up to 11 chars
+int val; // number (ASCII value)
+int level; // L level
+int addr; // M address
+} symbol;
+
+symbol symbol_table[MAX_SYMBOL_TABLE_SIZE];
+
 //the lexemelist fp
 FILE * ifp;
 int TOKEN;
@@ -38,12 +50,12 @@ void GETTOKEN()
     }
 }
 //returns that an error has occured
-void ERROR()
+void ERROR(char error[])
 {
-    printf("ERROR");
+    printf("%s", error);
     exit(1);
 }
-//checks if the token is a relational operator ( “=” | “<>” | “<” | “<=” |“>” | “>=” )
+//checks if the token is a relational operator ( = | <> | < | <= | > | >= )
 int isRelationalOperator(int token)
 {
     return(token == eqlsym || token == neqsym || token == lessym || token == leqsym || token == gtrsym || token == geqsym);
@@ -75,13 +87,13 @@ void FACTOR()
         EXPRESSION();
         if(TOKEN != rparentsym)
         {
-            ERROR;
+            ERROR("Error number 22, right parenthesis missing.");
         }
         GETTOKEN();
     }
     else
     {
-        ERROR();
+        ERROR("Error number 23, the preceding factor cannot begin with this symbol.");
     }
 }
 
@@ -122,7 +134,7 @@ void CONDITION()
         //TODO make an isRelation function
         if(!isRelationalOperator(TOKEN))
         {
-            ERROR();
+            ERROR("Error number 20, relational operator expected.");
         }
         GETTOKEN();
         EXPRESSION();
@@ -136,7 +148,7 @@ void STATEMENT()
         GETTOKEN();
         if(TOKEN != becomessym)
         {
-            ERROR();
+            ERROR("Error number 13, assignment operator expected.");
         }
         GETTOKEN();
         EXPRESSION();
@@ -146,7 +158,7 @@ void STATEMENT()
         GETTOKEN();
         if(TOKEN != identsym)
         {
-            ERROR();
+            ERROR("Error number 14, call must be followed by an identifier.");
         }
         GETTOKEN();
     }
@@ -161,7 +173,7 @@ void STATEMENT()
         }
         if(TOKEN != endsym)
         {
-            ERROR;
+            ERROR("Error number 26, end is expected.");
         }
         GETTOKEN();
     }
@@ -171,7 +183,7 @@ void STATEMENT()
         CONDITION();
         if(TOKEN != thensym)
         {
-            ERROR;
+            ERROR("Error number 16, then expected.");
         }
         GETTOKEN();
         STATEMENT();
@@ -182,10 +194,14 @@ void STATEMENT()
         CONDITION();
         if(TOKEN != dosym)
         {
-            ERROR();
+            ERROR("Error number 18, do expected.");
         }
         GETTOKEN();
         STATEMENT();
+    }
+    else
+    {
+        ERROR("Error number 7, statement expected.")
     }
 }
 
@@ -198,24 +214,24 @@ void BLOCK()
             GETTOKEN();
             if(TOKEN != identsym)
             {
-                ERROR();
+                ERROR("Error number 4, const must be followed by identifier.");
             }
             GETTOKEN();
             if(TOKEN != eqlsym)
             {
-                ERROR();
+                ERROR("Error number 2, identifier must be followed by =");
             }
             GETTOKEN();
             if(TOKEN != numbersym)
             {
-                ERROR();
+                ERROR("Error number 3, = must be followed by a number.");
             }
             GETTOKEN();
         } while(TOKEN != commasym);
 
         if(TOKEN != semicolonsym)
         {
-            ERROR();
+            ERROR("Error number 5, semicolon or comma missing.");
         }
         GETTOKEN();
     }
@@ -226,35 +242,35 @@ void BLOCK()
             GETTOKEN();
             if(TOKEN != identsym)
             {
-                ERROR();
+                ERROR("Error number 4, var must be followed by identifier.");
             }
             GETTOKEN();
         } while(TOKEN != commasym);
 
         if(TOKEN != semicolonsym)
         {
-            ERROR();
+            ERROR("Error number 5, semicolon or comma missing.");
         }
         GETTOKEN();
     }
-    //procedure section, will not be used yet
+    //procedure section, will not be used in module 3
     while(TOKEN == procsym)
     {
         GETTOKEN();
         if(TOKEN != identsym)
         {
-            ERROR();
+            ERROR("Error number 4, procedure must be followed by identifier.");
         }
         GETTOKEN();
         if(TOKEN != semicolonsym)
         {
-            ERROR();
+            ERROR("Error number 6, incorrect symbol after procedure declaration.");
         }
         GET(TOKEN);
         BLOCK();
         if(TOKEN != semicolonsym)
         {
-            ERROR();
+            ERROR("Error number 5, semicolon or comma missing.");
         }
         GETTOKEN();
     }
@@ -267,7 +283,7 @@ void PROGRAM()
     BLOCK();
     if(TOKEN != periodsym)
     {
-        ERROR();
+        ERROR("Error number 9, period expected.");
     }
 }
 
