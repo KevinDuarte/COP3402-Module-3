@@ -52,7 +52,7 @@ void GETTOKEN()
 //returns that an error has occured
 void ERROR(char error[])
 {
-    printf("%s", error);
+    printf("%s\n", error);
     exit(1);
 }
 //checks if the token is a relational operator ( = | <> | < | <= | > | >= )
@@ -77,7 +77,7 @@ void FACTOR()
     {
         GETTOKEN();
     }
-    else if(TOKEN == NUMBER)
+    else if(TOKEN == numbersym)
     {
         GETTOKEN();
     }
@@ -93,6 +93,7 @@ void FACTOR()
     }
     else
     {
+        printf("%d\n", TOKEN);
         ERROR("Error number 23, the preceding factor cannot begin with this symbol.");
     }
 }
@@ -131,7 +132,6 @@ void CONDITION()
     else
     {
         EXPRESSION();
-        //TODO make an isRelation function
         if(!isRelationalOperator(TOKEN))
         {
             ERROR("Error number 20, relational operator expected.");
@@ -188,7 +188,7 @@ void STATEMENT()
         GETTOKEN();
         STATEMENT();
     }
-    else if(TOKEN = whilesym)
+    else if(TOKEN == whilesym)
     {
         GETTOKEN();
         CONDITION();
@@ -198,10 +198,6 @@ void STATEMENT()
         }
         GETTOKEN();
         STATEMENT();
-    }
-    else
-    {
-        ERROR("Error number 7, statement expected.")
     }
 }
 
@@ -227,7 +223,7 @@ void BLOCK()
                 ERROR("Error number 3, = must be followed by a number.");
             }
             GETTOKEN();
-        } while(TOKEN != commasym);
+        } while(TOKEN == commasym);
 
         if(TOKEN != semicolonsym)
         {
@@ -245,7 +241,7 @@ void BLOCK()
                 ERROR("Error number 4, var must be followed by identifier.");
             }
             GETTOKEN();
-        } while(TOKEN != commasym);
+        } while(TOKEN == commasym);
 
         if(TOKEN != semicolonsym)
         {
@@ -266,10 +262,11 @@ void BLOCK()
         {
             ERROR("Error number 6, incorrect symbol after procedure declaration.");
         }
-        GET(TOKEN);
+        GETTOKEN();
         BLOCK();
         if(TOKEN != semicolonsym)
         {
+            //may need to be a different error message
             ERROR("Error number 5, semicolon or comma missing.");
         }
         GETTOKEN();
