@@ -4,7 +4,8 @@
 
 #define MAX_SYMBOL_TABLE_SIZE 100
 
-typedef struct symbol {
+typedef struct symbol
+{
 int kind; // const = 1, var = 2, proc = 3
 char name[12]; // name up to 11 chars
 int val; // number (ASCII value)
@@ -19,6 +20,8 @@ FILE * ifp;
 int TOKEN;
 char IDENTIFIER[12];
 int NUMBER;
+int numOfSymbols = 0;
+int numOfVariables = 0;
 
 //number symbol values
 typedef enum
@@ -30,6 +33,13 @@ thensym = 24, whilesym = 25, dosym = 26, callsym = 27, constsym = 28, varsym = 2
 readsym = 32, elsesym = 33
 }token_type;
 
+
+//returns that an error has occured
+void ERROR(char error[])
+{
+    printf("%s\n", error);
+    exit(1);
+}
 //gets the next token GET(TOKEN) in the psuedo
 void GETTOKEN()
 {
@@ -49,16 +59,58 @@ void GETTOKEN()
         fscanf(ifp, "%d", &NUMBER);
     }
 }
-//returns that an error has occured
-void ERROR(char error[])
+//enters a new symbol into the symbol table
+// kind: const = 1, var = 2, proc = 3
+void ENTER(int kind)
 {
-    printf("%s\n", error);
-    exit(1);
+    //ensures a symbol is in the symbol table once
+    int i;
+    for(i = 0; i < numOfSymbols; i++)
+    {
+        if(strcmp(symbol_table[i].name, IDENTIFIER) == 0)
+        {
+            ERROR("Error number 27, an identifier has been declared multiple times.");
+        }
+    }
+
+    symbol_table[numOfSymbols].kind = kind;
+    strcpy(symbol_table[numOfSymbols].name, IDENTIFIER);
+
+    if(kind == 1)
+    {
+        symbol_table[numOfSymbols].val = NUMBER;
+        //level is 0 since this is tiny PL/0
+        symbol_table[numOfSymbols].level = 0;
+        symbol_table[numOfSymbols].addr = 0;
+    }
+    if(kind == 2)
+    {
+        //level is 0 since this is tiny PL/0
+        symbol_table[numOfSymbols].level = 0;
+//TODO find what the base pointer is (0 or 1)
+        int basePointer = 0;
+        symbol_table[numOfSymbols].addr = basePointer + 4 + numOfVariables;
+        numOfVariables++;
+    }
+
+    numOfSymbols++;
 }
+
+
 //checks if the token is a relational operator ( = | <> | < | <= | > | >= )
 int isRelationalOperator(int token)
 {
     return(token == eqlsym || token == neqsym || token == lessym || token == leqsym || token == gtrsym || token == geqsym);
+}
+//returns the symbol/indentifier with the given name
+symbol getSymbol()
+{
+    int i;
+    for(i = 0; i < numOfVariables; i++)
+    {
+        if(strcmp(symbol_table[i].name, IDENTIFIER))
+            return symbol_table[i];
+    }
 }
 
 
@@ -75,10 +127,24 @@ void FACTOR()
 {
     if(TOKEN == identsym)
     {
+/*
+if getSymbol() == variable
+    LOD getSymbol().L getSymbol().M
+    possible ERROR(variable has not been initialized)
+else if getSymbol() == constant
+    INC 0 1
+    LIT 0 getSymbol().val
+*/
+
         GETTOKEN();
     }
     else if(TOKEN == numbersym)
     {
+/*
+INC 0 1
+LIT 0 NUMBER
+*/
+
         GETTOKEN();
     }
     else if(TOKEN == lparentsym)
@@ -105,6 +171,10 @@ void TERM()
     {
         GETTOKEN();
         FACTOR();
+/*
+OPR 0 4 (for mult)
+OPR 0 5 (for div)
+*/
     }
 }
 
@@ -112,6 +182,11 @@ void EXPRESSION()
 {
     if(TOKEN == plussym || TOKEN == minussym)
     {
+/*
+if(minussym)
+
+OPR 0 1
+*/
         GETTOKEN();
     }
     TERM();
@@ -119,6 +194,10 @@ void EXPRESSION()
     {
         GETTOKEN();
         TERM();
+/*
+OPR 0 2 (for add)
+OPR 0 3 (for sub)
+*/
     }
 }
 
@@ -128,6 +207,9 @@ void CONDITION()
     {
         GETTOKEN();
         EXPRESSION();
+/*
+OPR 0 6
+*/
     }
     else
     {
@@ -138,13 +220,40 @@ void CONDITION()
         }
         GETTOKEN();
         EXPRESSION();
+
+/*
+OPR 0 [conditionValue]
+*/
     }
 }
 
 void STATEMENT()
 {
+    //initialization
     if(TOKEN == identsym)
     {
+        char name[12];
+        strcpy(name, IDENTIFIER);
+
+        //looks for the identifier in the symbol table
+        int i, found = 0;
+        for(i = 0; i < numOfSymbols; i++)
+        {
+            if(strcmp(symbol_table[i].name, IDENTIFIER) == 0)
+            {
+                found = 1;
+                //if identifier is not a variable, produce error
+                if(symbol_table[i].kind != 2)
+                {
+                    ERROR("Error number 12, assignment to constant or procedure not allowed.");
+                }
+            }
+        }
+        if(found == 0)
+        {
+            ERROR("Error number 11, undeclared identifier.");
+        }
+
         GETTOKEN();
         if(TOKEN != becomessym)
         {
@@ -152,7 +261,11 @@ void STATEMENT()
         }
         GETTOKEN();
         EXPRESSION();
+/*
+STO n.L n.M
+*/
     }
+    //procedure call (not in tiny PL/0)
     else if(TOKEN == callsym)
     {
         GETTOKEN();
@@ -160,8 +273,29 @@ void STATEMENT()
         {
             ERROR("Error number 14, call must be followed by an identifier.");
         }
+
+        //looks for the identifier in the symbol table
+        int i, found = 0;
+        for(i = 0; i < numOfSymbols; i++)
+        {
+            if(strcmp(symbol_table[i].name, IDENTIFIER) == 0)
+            {
+                found = 1;
+                //if the identifier is not a procedure, produce an error
+                if(symbol_table[i].kind != 3)
+                {
+                    ERROR("Error number 15, call of a constant or variable is meaningless.");
+                }
+            }
+        }
+        if(found == 0)
+        {
+            ERROR("Error number 11, undeclared identifier.");
+        }
+
         GETTOKEN();
     }
+    //a group of statements
     else if(TOKEN == beginsym)
     {
         GETTOKEN();
@@ -181,6 +315,10 @@ void STATEMENT()
     {
         GETTOKEN();
         CONDITION();
+/*top of the stack has whether it is true or false
+  make branch here
+*/
+
         if(TOKEN != thensym)
         {
             ERROR("Error number 16, then expected.");
@@ -192,12 +330,17 @@ void STATEMENT()
     {
         GETTOKEN();
         CONDITION();
+/*top of the stack has whether it is true or false
+  make branch here
+*/
         if(TOKEN != dosym)
         {
             ERROR("Error number 18, do expected.");
         }
         GETTOKEN();
         STATEMENT();
+/*jump back to branch
+*/
     }
 }
 
@@ -213,6 +356,10 @@ void BLOCK()
                 ERROR("Error number 4, const must be followed by identifier.");
             }
             GETTOKEN();
+            if(TOKEN == becomessym)
+            {
+                ERROR("Error number 1, use = instead of :=");
+            }
             if(TOKEN != eqlsym)
             {
                 ERROR("Error number 2, identifier must be followed by =");
@@ -222,6 +369,8 @@ void BLOCK()
             {
                 ERROR("Error number 3, = must be followed by a number.");
             }
+            //the 0 is unnecissary
+            ENTER(1);
             GETTOKEN();
         } while(TOKEN == commasym);
 
@@ -240,6 +389,8 @@ void BLOCK()
             {
                 ERROR("Error number 4, var must be followed by identifier.");
             }
+            //what level do i input?
+            ENTER(2);
             GETTOKEN();
         } while(TOKEN == commasym);
 
@@ -257,6 +408,8 @@ void BLOCK()
         {
             ERROR("Error number 4, procedure must be followed by identifier.");
         }
+        //The 0 is useless here
+        ENTER(3);
         GETTOKEN();
         if(TOKEN != semicolonsym)
         {
@@ -271,6 +424,12 @@ void BLOCK()
         }
         GETTOKEN();
     }
+//inc stack
+
+/*
+INC 0 (4 + numOfVariables)
+*/
+
     STATEMENT();
 }
 
@@ -289,5 +448,11 @@ int main()
 {
     ifp = fopen("lexemelist.txt", "r");
     PROGRAM();
+    printf("parsing finished\n");
+    int i;
+    for(i = 0; i < numOfSymbols; i++)
+    {
+        printf("%d %s\n", symbol_table[i].kind, symbol_table[i].name);
+    }
     fclose(ifp);
 }
