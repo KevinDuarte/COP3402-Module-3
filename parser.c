@@ -17,11 +17,23 @@ symbol symbol_table[MAX_SYMBOL_TABLE_SIZE];
 
 //the lexemelist fp
 FILE * ifp;
+//Most recent token
 int TOKEN;
+//most recent identifier or number
 char IDENTIFIER[12];
 int NUMBER;
+
+//number of symbols in symbol_table
 int numOfSymbols = 0;
+//number of variables in symbol_table
 int numOfVariables = 0;
+
+//used for the branching in conditionals
+int inConditional = 0;
+int jumpLine = 0;
+
+//counts the amount of lines of assembly that have been written
+int lines = 0;
 
 //number symbol values
 typedef enum
@@ -102,15 +114,28 @@ int isRelationalOperator(int token)
 {
     return(token == eqlsym || token == neqsym || token == lessym || token == leqsym || token == gtrsym || token == geqsym);
 }
+
 //returns the symbol/indentifier with the given name
-symbol getSymbol()
+symbol getSymbol(char identifier[])
 {
-    int i;
+    int i, found = 0;
     for(i = 0; i < numOfVariables; i++)
     {
-        if(strcmp(symbol_table[i].name, IDENTIFIER))
+        if(strcmp(symbol_table[i].name, identifier))
             return symbol_table[i];
     }
+    if(found == 0)
+        ERROR("Error number 11, undeclared identifier.");
+}
+
+//used to print the assembly code to the output file
+void printToFile(char op[], int L, int M)
+{
+    //if you are in a conditional, it does not print
+    if(inConditional != 0)
+        return;
+
+    //print to the file here
 }
 
 
@@ -129,11 +154,15 @@ void FACTOR()
     {
 /*
 if getSymbol() == variable
-    LOD getSymbol().L getSymbol().M
     possible ERROR(variable has not been initialized)
+    LOD getSymbol().L getSymbol().M
+    printToFile()
+    lines++;
 else if getSymbol() == constant
     INC 0 1
     LIT 0 getSymbol().val
+    printToFile()
+    lines += 2;
 */
 
         GETTOKEN();
@@ -143,6 +172,8 @@ else if getSymbol() == constant
 /*
 INC 0 1
 LIT 0 NUMBER
+printToFile()
+lines += 2;
 */
 
         GETTOKEN();
@@ -174,6 +205,8 @@ void TERM()
 /*
 OPR 0 4 (for mult)
 OPR 0 5 (for div)
+printToFile()
+lines +=2;
 */
     }
 }
@@ -186,6 +219,8 @@ void EXPRESSION()
 if(minussym)
 
 OPR 0 1
+printToFile()
+lines++;
 */
         GETTOKEN();
     }
@@ -197,6 +232,8 @@ OPR 0 1
 /*
 OPR 0 2 (for add)
 OPR 0 3 (for sub)
+printToFile()
+lines +=2;
 */
     }
 }
@@ -209,6 +246,8 @@ void CONDITION()
         EXPRESSION();
 /*
 OPR 0 6
+printToFile()
+lines ++;
 */
     }
     else
@@ -222,7 +261,9 @@ OPR 0 6
         EXPRESSION();
 
 /*
-OPR 0 [conditionValue]
+OPR 0 [conditionValue
+printToFile()
+lines ++;
 */
     }
 }
@@ -232,26 +273,14 @@ void STATEMENT()
     //initialization
     if(TOKEN == identsym)
     {
+        //stores the name of the identifier that will be initialized
         char name[12];
         strcpy(name, IDENTIFIER);
 
-        //looks for the identifier in the symbol table
-        int i, found = 0;
-        for(i = 0; i < numOfSymbols; i++)
+        //if identifier is not a variable, produce error
+        if(getSymbol(IDENTIFIER).kind != 2)
         {
-            if(strcmp(symbol_table[i].name, IDENTIFIER) == 0)
-            {
-                found = 1;
-                //if identifier is not a variable, produce error
-                if(symbol_table[i].kind != 2)
-                {
-                    ERROR("Error number 12, assignment to constant or procedure not allowed.");
-                }
-            }
-        }
-        if(found == 0)
-        {
-            ERROR("Error number 11, undeclared identifier.");
+            ERROR("Error number 12, assignment to constant or procedure not allowed.");
         }
 
         GETTOKEN();
@@ -262,7 +291,9 @@ void STATEMENT()
         GETTOKEN();
         EXPRESSION();
 /*
-STO n.L n.M
+STO getSymbol(name).L getSymbol(name).M
+printToFile()
+lines++;
 */
     }
     //procedure call (not in tiny PL/0)
@@ -274,23 +305,10 @@ STO n.L n.M
             ERROR("Error number 14, call must be followed by an identifier.");
         }
 
-        //looks for the identifier in the symbol table
-        int i, found = 0;
-        for(i = 0; i < numOfSymbols; i++)
+        //if the identifier is not a procedure, produce an error
+        if(getSymbol(IDENTIFIER).kind != 3)
         {
-            if(strcmp(symbol_table[i].name, IDENTIFIER) == 0)
-            {
-                found = 1;
-                //if the identifier is not a procedure, produce an error
-                if(symbol_table[i].kind != 3)
-                {
-                    ERROR("Error number 15, call of a constant or variable is meaningless.");
-                }
-            }
-        }
-        if(found == 0)
-        {
-            ERROR("Error number 11, undeclared identifier.");
+            ERROR("Error number 15, call of a constant or variable is meaningless.");
         }
 
         GETTOKEN();
@@ -315,32 +333,79 @@ STO n.L n.M
     {
         GETTOKEN();
         CONDITION();
-/*top of the stack has whether it is true or false
-  make branch here
-*/
-
+//top of the stack has whether it is true or false
         if(TOKEN != thensym)
         {
             ERROR("Error number 16, then expected.");
         }
-        GETTOKEN();
-        STATEMENT();
+
+        //after the condition, count how many instructions are written
+        int currentLines = lines;
+        inConditional++;
+        fpos_t filePos;
+        fgetpos(ifp, &filePos);
+
+        //loop ensures this is done twice
+        int i;
+        for(i = 0; i < 2; i++)
+        {
+            if(i == 1)
+            {
+                inConditional--;
+//make branch here (lines contains the line that you jump to if the condition is not met)
+//printToFile()
+
+                //returns the file to the previous position
+                fsetpos(ifp, &filePos);
+                lines = currentLines;
+            }
+            //the line for the branch is added
+//lines++;
+
+            GETTOKEN();
+            STATEMENT();
+        }
     }
     else if(TOKEN == whilesym)
     {
         GETTOKEN();
         CONDITION();
-/*top of the stack has whether it is true or false
-  make branch here
-*/
+//top of the stack has whether it is true or false
         if(TOKEN != dosym)
         {
             ERROR("Error number 18, do expected.");
         }
-        GETTOKEN();
-        STATEMENT();
-/*jump back to branch
-*/
+
+        //after the condition, count how many instructions are written
+        int currentLines = lines;
+        inConditional++;
+        fpos_t filePos;
+        fgetpos(ifp, &filePos);
+
+        //loop ensures this is done twice
+        int i;
+        for(i = 0; i < 2; i++)
+        {
+            if(i == 1)
+            {
+                inConditional--;
+//make branch here (lines contains the line that you jump to if the condition is not met)
+//printToFile()
+
+                //returns the file to the previous position
+                fsetpos(ifp, &filePos);
+                lines = currentLines;
+            }
+            //the line for the branch is added
+//lines++;
+
+            GETTOKEN();
+            STATEMENT();
+
+//Jump back to condition (currentLines is where you jump to)
+//printToFile()
+//lines++
+        }
     }
 }
 
@@ -369,7 +434,6 @@ void BLOCK()
             {
                 ERROR("Error number 3, = must be followed by a number.");
             }
-            //the 0 is unnecissary
             ENTER(1);
             GETTOKEN();
         } while(TOKEN == commasym);
@@ -389,7 +453,6 @@ void BLOCK()
             {
                 ERROR("Error number 4, var must be followed by identifier.");
             }
-            //what level do i input?
             ENTER(2);
             GETTOKEN();
         } while(TOKEN == commasym);
@@ -400,7 +463,7 @@ void BLOCK()
         }
         GETTOKEN();
     }
-    //procedure section, will not be used in module 3
+    //procedure section (will not be used in module 3)
     while(TOKEN == procsym)
     {
         GETTOKEN();
@@ -408,7 +471,6 @@ void BLOCK()
         {
             ERROR("Error number 4, procedure must be followed by identifier.");
         }
-        //The 0 is useless here
         ENTER(3);
         GETTOKEN();
         if(TOKEN != semicolonsym)
@@ -424,10 +486,10 @@ void BLOCK()
         }
         GETTOKEN();
     }
-//inc stack
-
 /*
 INC 0 (4 + numOfVariables)
+printToFile()
+lines++
 */
 
     STATEMENT();
