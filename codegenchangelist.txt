@@ -1,0 +1,41 @@
+
+CHANGELIST 7/10/15 for PARSER
+------------------------------
+
+Changed printToFile to 3 ints as parameter since parser needs to print out the opcodes as ints,
+added fprintf statement to print out 3 int values per line
+
+Added output file pointer 'ofp', in main, added fopen and fclose for 
+
+Inside function FACTOR():
+	Lines 169 - 185 added code for assembly generation
+
+	Lines 197-202 added code for assembly generation
+
+Inside function TERM():
+	Lines 227-249, added code for assembly generation for mult and div
+
+Inside function EXPRESSION():
+	Lines 256-267, added code for assembly generation for negation
+
+	Lines 277-291, added code for assembly generation for add and sub
+
+Inside function CONDITION():
+	Lines 306-308, added assembly generation for odd
+
+	Lines 321-325, explanation of my implementation of conditionValue
+
+	Line 327-330, assembly generation for logical operations
+
+Inside function STATEMENT():
+	Lines 361-366, added assembly generation for store (value assignment for a variable)
+	Lines 430-432, added assembly generation for conditional jump for if
+	Line 445, lines++ for jump statement generated inside for loop
+	Lines 470-472, added assembly generation for conditional jump for while
+	Line 490, added lines++ for jump statement generated inside for loop
+	Lines 492-493, added assembly generation for jump back to the while condition
+
+Inside function BLOCK():
+	Lines 580-581, added assembly generation for stack adjustment (INC) for new variables
+
+End of changes.
