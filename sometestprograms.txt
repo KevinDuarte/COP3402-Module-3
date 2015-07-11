@@ -46,3 +46,29 @@ begin
          b := b + m;
    end  /*not sure if the while end needs a '.' */
 end.
+
+//Program to cause Error 12 "Assignment to constant or procedure is not allowed"
+var a;
+const b = 1;
+begin
+   a := 2;
+   b := b + a;
+end.
+
+//Program to cause Error 20 "Expected Relational Operator"
+var a, b;
+begin
+   a := 1;
+   b := 2;
+   if(a + b) then
+      a := 0;
+   else
+      a := b;
+end.
+
+//Program to cause Error 22 "Right parenthesis is missing"
+var a;
+begin
+   a := 1;
+   a := (2 * 2 + 2;
+end.
