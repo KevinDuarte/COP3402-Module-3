@@ -594,10 +594,10 @@ void PROGRAM()
 }
 
 
-int main()
+int parsermain()
 {
     ifp = fopen("lexemelist.txt", "r");
-    ofp = fopen("parseroutput.txt","w");
+    ofp = fopen("mcode.txt","w");
     PROGRAM();
     printf("parsing finished\n");
     int i;
