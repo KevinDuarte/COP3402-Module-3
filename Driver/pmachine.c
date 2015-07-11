@@ -27,6 +27,14 @@ instruction code[MAX_CODE_LENGTH];
 int stack[MAX_STACK_HEIGHT];
 //Current line of code
 int line = 0;
+//Lexical level array
+int lexi[3];
+    lexi[0] = 0;
+    lexi[1] = 0;
+    lexi[2] = 0;
+    lexi[3] = 0;
+//Lexi array pointer
+int lexilvl = 0;
 //CPU globals
 int bp = 1;          //base of current AR
 int sp = 0;          //top of stack
@@ -74,6 +82,9 @@ int pmachinemain()
       printTrace();
       fprintf(ofp," \n ");
    }
+   
+   fclose(ifp);
+   fclose(ofp);
 
 }
 
@@ -120,6 +131,9 @@ void execute(void)
          stack[sp + 4] = pc;                 //return address (RA)
          bp = sp + 1;
          pc = ir->m;
+         //For printing out correct stack
+         lexi[lexilvl] = sp;
+         lexilvl++;
          strcpy(opString,"cal");
          break;
       case 6:        //INC 0 M
@@ -186,6 +200,7 @@ void oprSwitch(int m)
    switch(m)
    {
       case 0:           //RET
+         lexilvl--;
          sp = bp - 1;
          pc = stack[sp + 4];
          bp = stack[sp + 3];
@@ -306,6 +321,7 @@ void printTrace(void)
 {
    int temp;
    int i;
+   int current = 0;
 
    stringSwitch(ir->op);
 
@@ -318,10 +334,13 @@ void printTrace(void)
 
    for(i = 1; i <= sp; i++)
    {
+    if(lexi[current] > 0 && i > lexi[current])
+    {
+      fprintf(ofp,"|");
+      current++;
+    }
       fprintf(ofp,"%d ",stack[i]);
-      if(sp >= 8 && i==6){
-         fprintf(ofp,"| ");
-      }
+
    }
 }
 
