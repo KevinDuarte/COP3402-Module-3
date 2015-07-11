@@ -591,6 +591,8 @@ void PROGRAM()
     {
         ERROR("Error number 9, period expected.");
     }
+    //the halt at the end of the program
+    printToFile(9, 0, 2);
 }
 
 

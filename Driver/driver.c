@@ -5,10 +5,10 @@
 int main()
 {
   scannermain();
-  printf("Scanner successful");
+  printf("Scanner successful\n");
   parsermain();
-  printf("Parsing and Code Generating successful");
+  printf("Parsing and Code Generating successful\n");
   pmachinemain();
-  printf("Everything done");
+  printf("Everything done\n");
   return 0;
 }
