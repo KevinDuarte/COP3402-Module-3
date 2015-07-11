@@ -27,6 +27,14 @@ instruction code[MAX_CODE_LENGTH];
 int stack[MAX_STACK_HEIGHT];
 //Current line of code
 int line = 0;
+//Lexical level array
+int lexi[3];
+    lexi[0] = 0;
+    lexi[1] = 0;
+    lexi[2] = 0;
+    lexi[3] = 0;
+//Lexi array pointer
+int lexilvl = 0;
 //CPU globals
 int bp = 1;          //base of current AR
 int sp = 0;          //top of stack
@@ -53,28 +61,31 @@ int main(int argc, char** argv)
    stack[0] = 0;
    stack[1] = 0;
    stack[2] = 0;
-   
+
    int count = codeStore();
-   
+
    printCode(count);
-   
+
    fprintf(ofp,"                      pc   bp   sp   stack\n");
    fprintf(ofp,"Initial values        %2d   %2d   %2d\n",pc,bp,sp);
    fprintf(ofp," ");
-   
+
    while( halt != 1)
    {
       fetch();
-      
+
       if(pc == count)
          halt = 1;
-      
+
       execute();
-      
+
       printTrace();
       fprintf(ofp," \n ");
    }
    
+   fclose(ifp);
+   fclose(ofp);
+
 }
 
 //Fetch Cycle
@@ -120,6 +131,10 @@ void execute(void)
          stack[sp + 4] = pc;                 //return address (RA)
          bp = sp + 1;
          pc = ir->m;
+         //For printing out correct stack
+         lexi[lexilvl] = sp;
+         printf("%d",lexi[lexilvl]);
+         lexilvl++;
          strcpy(opString,"cal");
          break;
       case 6:        //INC 0 M
@@ -170,7 +185,7 @@ int codeStore(void)
       fscanf(ifp,"%d",&code[count].l);
       fscanf(ifp,"%d",&code[count].m);
       code[count].line = count;
-      
+
       if(code[count].op == 9 && code[count].m == 2)
       {
          halt = 1;
@@ -186,6 +201,7 @@ void oprSwitch(int m)
    switch(m)
    {
       case 0:           //RET
+         lexilvl--;
          sp = bp - 1;
          pc = stack[sp + 4];
          bp = stack[sp + 3];
@@ -248,9 +264,9 @@ void printCode(int count)
 {
    instruction temp;
    int i;
-   
+
    fprintf(ofp,"Line  OP     L   M\n");
-   
+
    for(i = 0; i < count; i++)
    {
       temp = code[i];
@@ -306,22 +322,27 @@ void printTrace(void)
 {
    int temp;
    int i;
-   
+   int current = 0;
+
    stringSwitch(ir->op);
-      
+
    if(pc > 1)
       line = pc -1;
-         
+
    fprintf(ofp,"%2d   %3s   %2d   %2d   %2d   %2d   %2d   ",
            ir->line,opString,ir->l,ir->m,pc,bp,sp);
    temp = sp;
-   
+
    for(i = 1; i <= sp; i++)
    {
+    if(lexi[current] > 0 && i > lexi[current])
+    {
+      printf("%d\n",lexi[current]);
+      fprintf(ofp,"|");
+      current++;
+    }
       fprintf(ofp,"%d ",stack[i]);
-      if(sp >= 8 && i==6){
-         fprintf(ofp,"| ");
-      }
+
    }
 }
 
