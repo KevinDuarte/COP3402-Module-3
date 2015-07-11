@@ -123,7 +123,7 @@ symbol getSymbol(char identifier[])
     int i, found = 0;
     for(i = 0; i < numOfVariables; i++)
     {
-        if(strcmp(symbol_table[i].name, identifier))
+        if(strcmp(symbol_table[i].name, identifier) == 0)
             return symbol_table[i];
     }
     if(found == 0)
@@ -360,7 +360,7 @@ void STATEMENT()
         GETTOKEN();
         EXPRESSION();
 
-        symbol current = getSymbol(IDENTIFIER);
+        symbol current = getSymbol(name);
         //STO 0 M
         printToFile(4,current.level,current.addr);
         lines++;

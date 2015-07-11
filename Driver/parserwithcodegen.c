@@ -102,7 +102,7 @@ void ENTER(int kind)
         //level is 0 since this is tiny PL/0
         symbol_table[numOfSymbols].level = 0;
         //Base pointer starts at 1
-        int basePointer = 1;
+        int basePointer = 0;
         symbol_table[numOfSymbols].addr = basePointer + 4 + numOfVariables;
         numOfVariables++;
     }
@@ -123,7 +123,7 @@ symbol getSymbol(char identifier[])
     int i, found = 0;
     for(i = 0; i < numOfVariables; i++)
     {
-        if(strcmp(symbol_table[i].name, identifier))
+        if(strcmp(symbol_table[i].name, identifier) == 0)
             return symbol_table[i];
     }
     if(found == 0)
@@ -360,7 +360,7 @@ void STATEMENT()
         GETTOKEN();
         EXPRESSION();
 
-        symbol current = getSymbol(IDENTIFIER);
+        symbol current = getSymbol(name);
         //STO 0 M
         printToFile(4,current.level,current.addr);
         lines++;
@@ -601,13 +601,6 @@ int parsermain()
     ifp = fopen("lexemelist.txt", "r");
     ofp = fopen("mcode.txt","w");
     PROGRAM();
-    printf("parsing finished\n");
-    int i;
-    for(i = 0; i < numOfSymbols; i++)
-    {
-        printf("%d %s\n", symbol_table[i].kind, symbol_table[i].name);
-    }
     fclose(ifp);
     fclose(ofp);
-
 }
