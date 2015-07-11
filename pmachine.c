@@ -133,7 +133,6 @@ void execute(void)
          pc = ir->m;
          //For printing out correct stack
          lexi[lexilvl] = sp;
-         printf("%d",lexi[lexilvl]);
          lexilvl++;
          strcpy(opString,"cal");
          break;
@@ -337,7 +336,6 @@ void printTrace(void)
    {
     if(lexi[current] > 0 && i > lexi[current])
     {
-      printf("%d\n",lexi[current]);
       fprintf(ofp,"|");
       current++;
     }
