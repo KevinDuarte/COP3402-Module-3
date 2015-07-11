@@ -32,7 +32,6 @@ int numOfVariables = 0;
 
 //used for the branching in conditionals
 int inConditional = 0;
-int jumpLine = 0;
 
 //counts the amount of lines of assembly that have been written
 int lines = 0;
@@ -121,7 +120,7 @@ int isRelationalOperator(int token)
 symbol getSymbol(char identifier[])
 {
     int i, found = 0;
-    for(i = 0; i < numOfVariables; i++)
+    for(i = 0; i < numOfSymbols; i++)
     {
         if(strcmp(symbol_table[i].name, identifier) == 0)
             return symbol_table[i];
@@ -155,18 +154,6 @@ void FACTOR()
 {
     if(TOKEN == identsym)
     {
-/*
-if getSymbol() == variable
-    possible ERROR(variable has not been initialized)
-    LOD getSymbol().L getSymbol().M
-    printToFile()
-    lines++;
-else if getSymbol() == constant
-    INC 0 1
-    LIT 0 getSymbol().val
-    printToFile()
-    lines += 2;
-*/
         symbol current = getSymbol(IDENTIFIER);
         if(current.kind == 2)
         {
@@ -189,17 +176,9 @@ else if getSymbol() == constant
     }
     else if(TOKEN == numbersym)
     {
-/*
-INC 0 1
-LIT 0 NUMBER
-printToFile()
-lines += 2;
-*/
-        //INC 0 1 -- We don't need this because LIT increases sp by one already
-        //printToFile(1,0,1);
         //LIT 0 NUMBER
         printToFile(1,0,NUMBER);
-        lines += 2;
+        lines++;
 
         GETTOKEN();
     }
@@ -241,12 +220,6 @@ void TERM()
             printToFile(2,0,5);
             lines++;
         }
-    /*
-    OPR 0 4 (for mult)
-    OPR 0 5 (for div)
-    printToFile()
-    lines +=2;
-    */
     }
 }
 
@@ -265,12 +238,6 @@ void EXPRESSION()
         {
             GETTOKEN();
         }
-/*
-if(minussym)
-OPR 0 1
-printToFile()
-lines++;
-*/
     }
     TERM();
     while(TOKEN == plussym || TOKEN == minussym)
@@ -289,12 +256,6 @@ lines++;
             printToFile(2,0,3);
             lines++;
         }
-/*
-OPR 0 2 (for add)
-OPR 0 3 (for sub)
-printToFile()
-lines +=2;
-*/
     }
 }
 
@@ -306,11 +267,7 @@ void CONDITION()
         EXPRESSION();
         //OPR 0 6
         printToFile(2,0,6);
-/*
-OPR 0 6
-printToFile()
-lines ++;
-*/
+        lines++;
     }
     else
     {
@@ -328,12 +285,7 @@ lines ++;
 
         //OPR 0 M
         printToFile(2,0,conditionValue);
-
-/*
-OPR 0 [conditionValue]
-printToFile()
-lines ++;
-*/
+        lines++;
     }
 }
 
@@ -364,11 +316,6 @@ void STATEMENT()
         //STO 0 M
         printToFile(4,current.level,current.addr);
         lines++;
-/*
-STO getSymbol(name).L getSymbol(name).M
-printToFile()
-lines++;
-*/
     }
     //procedure call (not in tiny PL/0)
     else if(TOKEN == callsym)
@@ -434,18 +381,19 @@ lines++;
                 //returns the file to the previous position
                 fsetpos(ifp, &filePos);
                 lines = currentLines;
+                //Lines increment for prinToFile used in for loop
+                //lines++;
             }
-            //the line for the branch is added
-            //lines++;
+            lines++;
 
             GETTOKEN();
             STATEMENT();
         }
-        //Lines increment for prinToFile used in for loop
-        lines++;
+
     }
     else if(TOKEN == whilesym)
     {
+        int jumpBackLine = lines;
         GETTOKEN();
         CONDITION();
 //top of the stack has whether it is true or false
@@ -467,29 +415,25 @@ lines++;
             if(i == 1)
             {
                 inConditional--;
-//make branch here (lines contains the line that you jump to if the condition is not met)
+//make branch here (lines + 1 contains the line that you jump to if the condition is not met)
 //printToFile()
-                //JPC 0 M = lines
-                printToFile(8,0,lines);
+                //JPC 0 M = l
+                printToFile(8,0,lines + 1);
 
                 //returns the file to the previous position
                 fsetpos(ifp, &filePos);
                 lines = currentLines;
+                //Lines increment for the printToFile used in for loop
+                //lines++;
             }
             //the line for the branch is added
-            //lines++;
+            lines++;
 
             GETTOKEN();
             STATEMENT();
-
-//Jump back to condition (currentLines is where you jump to)
-//printToFile()
-//lines++
         }
-        //Lines increment for the printToFile used in for loop
-        lines++;
-        //JMP 0 M = currentLines
-        printToFile(7,0,currentLines);
+        //JMP 0 M = jumpBackLines
+        printToFile(7,0,jumpBackLine);
         lines++;
     }
 }
@@ -571,11 +515,6 @@ void BLOCK()
         }
         GETTOKEN();
     }
-/*
-INC 0 (4 + numOfVariables)
-printToFile()
-lines++
-*/
     //INC O (4+numOfVariables)
     printToFile(6,0,4+numOfVariables);
     lines++;

@@ -29,10 +29,7 @@ int stack[MAX_STACK_HEIGHT];
 int line = 0;
 //Lexical level array
 int lexi[3];
-    lexi[0] = 0;
-    lexi[1] = 0;
-    lexi[2] = 0;
-    lexi[3] = 0;
+
 //Lexi array pointer
 int lexilvl = 0;
 //CPU globals
@@ -61,6 +58,10 @@ int main(int argc, char** argv)
    stack[0] = 0;
    stack[1] = 0;
    stack[2] = 0;
+   lexi[0] = 0;
+   lexi[1] = 0;
+   lexi[2] = 0;
+   lexi[3] = 0;
 
    int count = codeStore();
 
@@ -82,7 +83,7 @@ int main(int argc, char** argv)
       printTrace();
       fprintf(ofp," \n ");
    }
-   
+
    fclose(ifp);
    fclose(ofp);
 
