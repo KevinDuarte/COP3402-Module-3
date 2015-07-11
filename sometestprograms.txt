@@ -1,0 +1,48 @@
+//Test for while
+
+var a;
+begin
+   while a < 20
+   a := a + 1;
+end.
+
+//Test for if
+var a, b;
+begin
+   a := 1
+   b := 2
+   if a > 2 then
+      b := a
+   else
+      a := b;
+end.
+
+//addition with vars
+
+var a;
+var b;
+begin
+   a := 1;
+   b := 1;
+   a := b + 1; /* a = 2 */
+   a := a + 1; /* a = 3 */
+   b := a + 1; /* b = 4 */
+   a := b + 1; /* a = 5 */
+end.
+
+//something more complicated
+
+var a, b;
+const m = 1;
+begin
+   a := 4 + m; /*5*/
+   b := a + m; /*6*/
+   a := a * b; /*30*/
+   while b < a do
+   begin
+      if odd b then 
+         b := b + 3;
+      else
+         b := b + m;
+   end  /*not sure if the while end needs a '.' */
+end.
