@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-int scannermain();
+int scannermain(int argc, char** argv);
 
 #endif
