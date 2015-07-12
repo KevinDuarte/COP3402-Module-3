@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-int pmachinemain();
+int pmachinemain(int argc, char** argv);
 
 #endif
