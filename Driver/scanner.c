@@ -6,6 +6,8 @@
 
 //Lexical Analyser code here
 
+//Flag for print to screen command
+int consoleFlag = 0;
 //token struct
 typedef struct
 {
@@ -114,8 +116,18 @@ void printToken(token_t *token)
 
     //prints to the lexemelist
     fprintf(lexemelist, "%d ", token->class);
+    if(consoleFlag == 1)
+    {
+        printf("%d", token->class);
+    }
     if(token->class == identsym || token->class == numbersym)
+    {
         fprintf(lexemelist, "%s ", token->lexeme);
+        if(consoleFlag == 1)
+        {
+            printf("%s", token->lexeme);
+        }
+    }
 
     //reset the token
     int i;
@@ -546,11 +558,20 @@ int readInput(void)
    return i;
 }
 
-int scannermain()
+int scannermain(int argc, char** argv)
 {
     //reads the input and removes comments
     ifp = fopen("input.txt","r");
     ofp = fopen("cleaninput.txt","w");
+    
+    //For command directive "-l"
+    if(argc == 2)
+    {
+        if(!strcmp(argv[1],"print"))
+        {
+            consoleFlag = 1;
+        }
+    }
 
     int size = readInput();
 
