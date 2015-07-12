@@ -1,7 +1,7 @@
 #include "scanner.h"
 #include "parserwithcodegen.h"
 #include "pmachine.h"
-#include "string.h"
+#include <string.h>
 
 int main(int argc, char** argv)
 {
@@ -29,12 +29,12 @@ int main(int argc, char** argv)
       vFlag = 1;
     }
   }
-  char buffer[3][10]
+  char buffer[3][10];
   strcpy(buffer[1],"print");
 
   if(lFlag == 1)
   {
-    scannermain(2,buffer)
+    scannermain(2,buffer);
   }
   else
   {

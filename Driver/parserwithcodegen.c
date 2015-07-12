@@ -5,7 +5,7 @@
 #define MAX_SYMBOL_TABLE_SIZE 100
 
 //For command directive
-int consoleFlag = 0;
+//int consoleFlag = 0;
 
 typedef struct symbol
 {
@@ -556,7 +556,7 @@ int parsermain(int argc, char** argv)
           consoleFlag = 1;
        }
     }
-   
+
     PROGRAM();
     fclose(ifp);
     fclose(ofp);
