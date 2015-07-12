@@ -20,7 +20,6 @@ typedef struct {
    int m;   // M
    int line;//line of code
    }instruction;
-
 //Code array
 instruction code[MAX_CODE_LENGTH];
 //Stack array
@@ -29,7 +28,6 @@ int stack[MAX_STACK_HEIGHT];
 int line = 0;
 //Lexical level array
 int lexi[3];
-
 //Lexi array pointer
 int lexilvl = 0;
 //CPU globals
@@ -48,10 +46,11 @@ void oprSwitch(int m);
 void printCode(int count);
 void stringSwitch(int op);
 void printTrace(void);
+void printTraceToConsole(void);
 int base(int level, int b);
 
 //Main
-int pmachinemain()
+int pmachinemain(int argc, char** argv)
 {
    ifp = fopen("mcode.txt","r");
    ofp = fopen("stacktrace.txt","w");
@@ -70,7 +69,17 @@ int pmachinemain()
    fprintf(ofp,"                      pc   bp   sp   stack\n");
    fprintf(ofp,"Initial values        %2d   %2d   %2d\n",pc,bp,sp);
    fprintf(ofp," ");
-
+   
+   int consoleFlag = 0;
+   //For command directive "-v"
+   if(argc == 2)
+   {
+      if(!strcmp(argv[1],"print"))
+      {
+         consoleFlag = 1;
+      }
+   }
+   
    while( halt != 1)
    {
       fetch();
@@ -81,6 +90,11 @@ int pmachinemain()
       execute();
 
       printTrace();
+      if(consoleFlag == 1)
+      {
+         printTraceToConsole();
+         printf(" \n ");
+      }
       fprintf(ofp," \n ");
    }
 
@@ -341,6 +355,33 @@ void printTrace(void)
       current++;
     }
       fprintf(ofp,"%d ",stack[i]);
+
+   }
+}
+
+void printTraceToConsole(void)
+{
+   int temp;
+   int i;
+   int current = 0;
+
+   stringSwitch(ir->op);
+
+   if(pc > 1)
+      line = pc -1;
+
+   printf("%2d   %3s   %2d   %2d   %2d   %2d   %2d   ",
+           ir->line,opString,ir->l,ir->m,pc,bp,sp);
+   temp = sp;
+
+   for(i = 1; i <= sp; i++)
+   {
+    if(lexi[current] > 0 && i > lexi[current])
+    {
+      printf("|");
+      current++;
+    }
+      printf("%d ",stack[i]);
 
    }
 }
