@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-int parsermain();
+int parsermain(int argc, char** argv);
 
 #endif
