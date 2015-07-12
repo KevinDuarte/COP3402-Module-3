@@ -19,6 +19,8 @@ symbol symbol_table[MAX_SYMBOL_TABLE_SIZE];
 FILE * ifp;
 //output file pointer
 FILE* ofp;
+//flag to print to screen
+int consoleFlag = 0;
 //Most recent token
 int TOKEN;
 //most recent identifier or number
@@ -138,6 +140,10 @@ void printToFile(int op, int L, int M)
 
     //print to the file here
     fprintf(ofp,"%d %d %d \n", op, L, M);
+    if(consoleFlag == 1)
+    {
+      printf("%d %d %d \n", op, L, M);
+    }
 }
 
 
@@ -535,10 +541,19 @@ void PROGRAM()
 }
 
 
-int parsermain()
+int parsermain(int argc, char** argv)
 {
     ifp = fopen("lexemelist.txt", "r");
     ofp = fopen("mcode.txt","w");
+    //For command directive "-a"
+    if(argc == 2)
+    {
+       if(!strcmp(argv[1],"print"))
+       {
+          consoleFlag = 1;
+       }
+    }
+   
     PROGRAM();
     fclose(ifp);
     fclose(ofp);
