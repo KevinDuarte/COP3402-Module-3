@@ -9,7 +9,7 @@ int main(int argc, char** argv)
   int lFlag;
   int aFlag;
   int vFlag;
-  
+
   //Loops through arguments, argv[0] is file name, file arguments
   //start at argv[1], will loop through argv[1] to argv[argc-1]
   //and set flags based on commands, if the directives are incorrectly formatted
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
   }
   char buffer[3][10]
   strcpy(buffer[1],"print");
-  
+
   if(lFlag == 1)
   {
     scannermain(2,buffer)
@@ -40,8 +40,8 @@ int main(int argc, char** argv)
   {
     scannermain(0, buffer);
   }
-  printf("Scanner successful\n");
-  
+  printf("Program was successfully scanned in.\n");
+
   if(aFlag == 1)
   {
     parsermain(2,buffer);
@@ -50,8 +50,8 @@ int main(int argc, char** argv)
   {
     parsermain(0,buffer);
   }
-  printf("Parsing and Code Generating successful\n");
-  
+  printf("No errors, program is syntactically correct.\n");
+
   if(vFlag == 1)
   {
     pmachine(2, buffer);
@@ -60,6 +60,6 @@ int main(int argc, char** argv)
   {
     pmachinemain(0,buffer);
   }
-  printf("Everything done\n");
+  printf("Stacktrace successfully created\n");
   return 0;
 }
