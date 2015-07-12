@@ -4,6 +4,9 @@
 
 #define MAX_SYMBOL_TABLE_SIZE 100
 
+//For command directive
+int consoleFlag = 0;
+
 typedef struct symbol
 {
 int kind; // const = 1, var = 2, proc = 3
