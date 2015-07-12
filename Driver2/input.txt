@@ -1,12 +1,7 @@
-const m = 1;
 var a, b;
 begin
-   a := 4 + m; /*5*/
-   b := a + 2; /*7*/
-   a := a * b; /*35*/
-   while b < a do
-   begin
-      if odd b then 
-         b := b + 4;
-   end  /*not sure if the while end needs a '.' */
-end.
+   a := 1;
+   b := 2;
+   if a > 2 then
+      b := a;
+end.                                    

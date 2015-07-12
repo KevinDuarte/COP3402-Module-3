@@ -6,7 +6,7 @@
 
   gcc driver.c parserwithcodegen.c scanner.c pmachine.c -o driver
 
-//How to run (ensure there is an input.txt with the input code):
+//How to run (ensure there is an input.txt with the PL/0 input code):
 
   ./driver
 
