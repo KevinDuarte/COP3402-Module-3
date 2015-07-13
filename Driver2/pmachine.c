@@ -156,12 +156,12 @@ void execute(void)
       case 9:        //SIO - pop & print, read & push, halt
          if( ir->m == 0)
          {
-            printf("\n%d\n",stack[sp]);
+            printf("Output: %d\n\n",stack[sp]);
             sp--;
          }else if(ir-> m == 1)
          {
             sp++;
-            printf("\nEnter value to push to stack: ");
+            printf("Enter value to push to stack: ");
             scanf("%d",&stack[sp]);
             printf("\n");
          }else if(ir->m == 2)

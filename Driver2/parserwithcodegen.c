@@ -436,6 +436,60 @@ void STATEMENT()
         printToFile(7,0,jumpBackLine);
         lines++;
     }
+    else if(TOKEN == readsym)
+    {
+        GETTOKEN();
+        if(TOKEN != identsym)
+        {
+            ERROR("Error number 28, identifier expected after read.");
+        }
+
+        symbol current = getSymbol(IDENTIFIER);
+
+        if(current.kind != 2)
+        {
+            ERROR("Error number 29, writing to a constant or procedure is not allowed.");
+        }
+
+        //SIO 0 1
+        //STO 0 M
+        printToFile(9, 0, 1);
+        printToFile(4,current.level,current.addr);
+        lines += 2;
+
+        GETTOKEN();
+    }
+    else if(TOKEN == writesym)
+    {
+        GETTOKEN();
+        if(TOKEN != identsym)
+        {
+            ERROR("Error number 30, identifier expected after write.");
+        }
+
+        symbol current = getSymbol(IDENTIFIER);
+
+        if(current.kind == 3)
+        {
+            ERROR("Error number 31, cannot write a procedure.");
+        }
+
+        if(current.kind == 2)
+        {
+            //LOD L M
+            printToFile(3, current.level, current.addr);
+        }
+        if(current.kind == 1)
+        {
+            //LIT 0 val
+            printToFile(1, 0, current.val);
+        }
+        //SIO 0 0
+        printToFile(9, 0, 0);
+        lines +=2;
+
+        GETTOKEN();
+    }
 }
 
 void BLOCK()

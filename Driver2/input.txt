@@ -1,7 +1,8 @@
 var a, b;
 begin
-   a := 1;
-   b := 2;
-   if a > 2 then
-      b := a;
+   read a;
+   b := a + 1;
+   if a >= 2 then
+      b := b - a;
+   write b;
 end.                                    
